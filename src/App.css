@@ -1,0 +1,287 @@
+@import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&display=swap");
+
+/* Root Variables */
+:root {
+    --neon-blue: #00f3ff;
+    --neon-green: #39ff14;
+    --neon-purple: #9d00ff;
+    --neon-pink: #ff00ff;
+    --dark-bg: #0a0a0a;
+    --navcolor: rgba(20, 15, 50, 0.9);
+    --glow-intensity: 0.8;
+  }
+  
+  /* Global Styles */
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  /* App Container */
+  .app-container {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+    color: #ffffff;
+    position: relative;
+    overflow: hidden;
+    font-family: "Orbitron", "Exo 2", sans-serif;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .app-container::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at center, #00ffc3 0%, transparent 70%);
+    opacity: 0.3;
+    filter: blur(20px);
+    animation: pulseGlow 4s ease-in-out infinite;
+    z-index: -1;
+  }
+  
+  .app-container::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at 10% 10%, #00d1ff 0%, transparent 50%);
+    opacity: 0.2;
+    filter: blur(30px);
+    animation: pulseGlow 6s ease-in-out infinite;
+    z-index: -1;
+  }
+  
+  /* Main Content */
+  .main-content {
+    max-width: 1200px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+    position: relative;
+    z-index: 10;
+    flex: 1;
+  }
+  
+  /* Common Button Styles */
+  .btn-primary {
+    background: linear-gradient(45deg, #00ffc3, #00d1ff);
+    color: #0a0a0a;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    border: 2px solid #00ffc3;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    font-family: "Orbitron", sans-serif;
+    font-weight: 500;
+    text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  
+  .btn-primary::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.6s ease, height 0.6s ease;
+    z-index: -1;
+  }
+  
+  .btn-primary:hover {
+    background: linear-gradient(45deg, #00d1ff, #00ffc3);
+    transform: translateY(-5px) scale(1.05);
+    box-shadow: 0 0 20px rgba(0, 255, 195, 0.7), 0 0 40px rgba(0, 255, 195, 0.3);
+  }
+  
+  .btn-primary:hover::before {
+    width: 300%;
+    height: 300%;
+  }
+  
+  /* Common Card Styles */
+  .card {
+    background: linear-gradient(135deg, #111 0%, #1a1a1a 100%);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(0, 255, 195, 0.3);
+    box-shadow: 0 0 20px rgba(0, 255, 195, 0.2), 0 0 40px rgba(0, 255, 195, 0.1);
+    transition: transform 0.4s, box-shadow 0.4s;
+    width: 100%;
+  }
+  
+  .card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 0 30px rgba(0, 255, 195, 0.7), 0 0 60px rgba(0, 255, 195, 0.3);
+    border: 1px solid #00ffc3;
+  }
+  
+  .card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(0, 255, 195, 0.3), transparent);
+    transition: 0.6s;
+  }
+  
+  .card:hover::before {
+    left: 100%;
+  }
+  
+  /* Common Input Field Styles */
+  .input-field {
+    background: rgba(20, 15, 50, 0.95);
+    color: #ffffff;
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+    border: 1px solid rgba(0, 255, 195, 0.3);
+    font-family: "Orbitron", sans-serif;
+    transition: border-color 0.3s, box-shadow 0.3s;
+    width: 100%;
+  }
+  
+  .input-field:focus {
+    outline: none;
+    border-color: #00ffc3;
+    box-shadow: 0 0 10px rgba(0, 255, 195, 0.7), 0 0 20px rgba(0, 255, 195, 0.3);
+  }
+  
+  /* Common Animations */
+  @keyframes neonPulse {
+    0% {
+      text-shadow: 0 0 10px rgba(0, 255, 195, 0.5), 0 0 20px rgba(0, 255, 195, 0.3);
+    }
+    50% {
+      text-shadow: 0 0 20px rgba(0, 255, 195, 0.8), 0 0 40px rgba(0, 255, 195, 0.4);
+    }
+    100% {
+      text-shadow: 0 0 10px rgba(0, 255, 195, 0.5), 0 0 20px rgba(0, 255, 195, 0.3);
+    }
+  }
+  
+  @keyframes pulseGlow {
+    0% {
+      opacity: 0.3;
+    }
+    50% {
+      opacity: 0.5;
+    }
+    100% {
+      opacity: 0.3;
+    }
+  }
+  
+  /* Common Scrollbar Styles */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #00ffc3, #00d1ff);
+    border-radius: 4px;
+    border: 2px solid rgba(0, 0, 0, 0.2);
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #00d1ff, #00ffc3);
+    box-shadow: 0 0 10px rgba(0, 255, 195, 0.5);
+  }
+  
+  /* Firefox Scrollbar */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #00ffc3 rgba(0, 0, 0, 0.2);
+  }
+  
+  
+  
+  
+  /* Responsive Styles */
+  @media (max-width: 1200px) {
+    .main-content {
+      max-width: 100%;
+      padding: 1.5rem;
+    }
+  
+    .card {
+      padding: 1.2rem;
+    }
+  
+    .btn-primary {
+      padding: 0.6rem 1.2rem;
+      font-size: 0.9rem;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .main-content {
+      padding: 1rem;
+    }
+  
+    .card {
+      padding: 1rem;
+    }
+  
+    .btn-primary {
+      padding: 0.5rem 1rem;
+      font-size: 0.85rem;
+    }
+  
+    .input-field {
+      padding: 0.6rem 0.8rem;
+      font-size: 0.9rem;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .main-content {
+      padding: 0.8rem;
+    }
+  
+    .card {
+      padding: 0.8rem;
+    }
+  
+    .btn-primary {
+      padding: 0.4rem 0.8rem;
+      font-size: 0.8rem;
+    }
+  
+    .input-field {
+      padding: 0.5rem 0.7rem;
+      font-size: 0.85rem;
+    }
+  }
+  
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      animation: none !important;
+      transition: none !important;
+    }
+  }
+  

@@ -1,0 +1,113 @@
+.signup-container {
+  padding: 6rem 2rem 2rem;
+  max-width: 600px;
+  margin: 0 auto;
+  margin-top: 30px;
+  font-family: "Exo 2", sans-serif;
+  min-height: 100vh;
+  color: #eee;
+  background: #0a0a0a;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.signup-form {
+  background: #111111;
+  border-radius: 1rem;
+  padding: 2rem;
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+  width: 100%;
+}
+
+.signup-title {
+  text-align: center;
+  margin-bottom: 2rem;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #00faff;
+  text-shadow: 0 0 8px #00faff, 0 0 20px #00faff;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  font-size: 1.1rem;
+  color: #ccc;
+  margin-bottom: 0.5rem;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 0.8rem;
+  font-size: 1rem;
+  border-radius: 0.5rem;
+  border: none;
+  background: #222;
+  color: #eee;
+  box-shadow: 0 0 5px rgba(0, 255, 255, 0.2);
+  transition: box-shadow 0.3s;
+}
+
+.form-group input:focus {
+  outline: none;
+  box-shadow: 0 0 10px #00faff;
+}
+
+.input-error {
+  box-shadow: 0 0 10px #ff0055 !important;
+}
+
+.error-text {
+  color: #ff0055;
+  font-size: 0.9rem;
+  margin-top: 0.3rem;
+}
+
+.signup-btn {
+  width: 100%;
+  height: 50px;
+  padding: 14px 28px;
+  font-size: 16px;
+  font-weight: bold;
+  background: linear-gradient(135deg, #00ffc3, #00d1ff);
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  color: #0a0a0a;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.signup-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 20px rgba(0, 255, 195, 0.8), 0 0 40px rgba(0, 255, 195, 0.3);
+}
+
+.signup-footer {
+  text-align: center;
+  margin-top: 1.5rem;
+  color: #ccc;
+}
+
+.signup-footer .link {
+  color: #00faff;
+  text-decoration: none;
+  text-shadow: 0 0 5px #00faff;
+}
+
+.signup-footer .link:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 1200px) {
+  .signup-container {
+    margin-top: 80px;
+  }
+}

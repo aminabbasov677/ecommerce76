@@ -1,0 +1,134 @@
+/* Custom CSS for Neon Effects and Animations */
+@keyframes pulseGlow {
+    0% {
+      box-shadow: 0 0 10px #00ffc3, 0 0 20px rgba(0, 255, 195, 0.5), 0 0 40px rgba(0, 255, 195, 0.2);
+      transform: scale(1);
+    }
+    50% {
+      box-shadow: 0 0 20px #00ffc3, 0 0 40px rgba(0, 255, 195, 0.7), 0 0 80px rgba(0, 255, 195, 0.3);
+      transform: scale(1.02);
+    }
+    100% {
+      box-shadow: 0 0 10px #00ffc3, 0 0 20px rgba(0, 255, 195, 0.5), 0 0 40px rgba(0, 255, 195, 0.2);
+      transform: scale(1);
+    }
+  }
+  
+  @keyframes glitch {
+    0% { transform: translate(0); }
+    20% { transform: translate(-2px, 2px); }
+    40% { transform: translate(-2px, -2px); }
+    60% { transform: translate(2px, 2px); }
+    80% { transform: translate(2px, -2px); }
+    100% { transform: translate(0); }
+  }
+  
+  .daily-activity-container {
+    padding: 8rem 1rem 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+    font-family: 'Orbitron', sans-serif;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #0a0a0a 0%, #1e1e2e 50%, #0a0a0a 100%);
+    background-size: 200% 200%;
+    animation: gradientShift 15s ease infinite;
+    box-shadow: 0 0 60px rgba(0, 255, 195, 0.3), inset 0 0 20px rgba(0, 209, 255, 0.2);
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .page-title {
+    text-align: center;
+    margin-bottom: 3rem;
+    margin-top: 1rem;
+    font-size: 2.5rem;
+    color: #00ffc3;
+    text-shadow: 0 0 15px rgba(0, 255, 195, 0.7), 0 0 30px rgba(0, 209, 255, 0.4);
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    position: relative;
+    transition: all 0.4s ease;
+  }
+  
+  .page-title:hover {
+    color: #ff00ff;
+    text-shadow: 0 0 25px rgba(255, 0, 255, 0.9), 0 0 50px rgba(0, 209, 255, 0.5);
+  }
+  
+  .chart-container {
+    background: rgba(17, 17, 17, 0.9);
+    border: 2px solid #00ffc3;
+    border-radius: 15px;
+    padding: 20px;
+    margin: 0 auto;
+    max-width: 1200px;
+    height: 600px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 0 20px rgba(0, 255, 195, 0.2);
+  }
+  
+  .chart-container:hover {
+    border-color: #ff00ff;
+    box-shadow: 0 0 20px rgba(255, 0, 255, 0.2);
+  }
+  
+  @media (max-width: 768px) {
+    .daily-activity-container {
+      padding: 4rem 1rem 1rem;
+    }
+  
+    .page-title {
+      font-size: 2rem;
+    }
+  
+    .chart-container {
+      height: 400px;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .daily-activity-container {
+      padding: 3rem 0.5rem 0.5rem;
+    }
+  
+    .page-title {
+      font-size: 1.5rem;
+    }
+  
+    .chart-container {
+      height: 350px;
+    }
+  }
+  
+  @media (prefers-reduced-motion: reduce) {
+    .chart-container,
+    .page-title {
+      transition: none;
+      animation: none;
+    }
+  }
+
+.back-button {
+  background: none;
+  border: 2px solid #00ffc3;
+  color: #00ffc3;
+  font-size: 16px;
+  cursor: pointer;
+  margin: 10px;
+  padding: 10px 20px;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  position: relative;
+  font-weight: 500;
+  font-family: 'Orbitron', sans-serif;
+  text-shadow: 0 0 8px rgba(0, 255, 195, 0.6);
+}
+
+.back-button:hover {
+  color: #ff00ff;
+  border-color: #ff00ff;
+  text-shadow: 0 0 8px rgba(255, 0, 255, 0.6);
+}
