@@ -1,9 +1,19 @@
 {
   "version": 2,
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/node",
+      "config": {
+        "buildCommand": "npm run build",
+        "installCommand": "npm install"
+      }
+    }
+  ],
   "rewrites": [
     {
-      "source": "/assets/:path*",
-      "destination": "/assets/:path*"
+      "source": "/assets/(.*)",
+      "destination": "/assets/$1"
     },
     {
       "source": "/(.*)",
@@ -12,17 +22,12 @@
   ],
   "headers": [
     {
-      "source": "/assets/:path*",
+      "source": "/(.*)",
       "headers": [
         {
           "key": "cache-control",
-          "value": "public, max-age=31536000, immutable"
-        }
-      ]
-    },
-    {
-      "source": "/(.*)",
-      "headers": [
+          "value": "public, max-age=0, must-revalidate"
+        },
         {
           "key": "X-Content-Type-Options",
           "value": "nosniff"
