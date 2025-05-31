@@ -18,6 +18,7 @@ import { FavoritesProvider } from "./context/FavoritesContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import { AuthProvider } from "./context/AuthContext";
 import { TrackingProvider } from "./context/TrackingContext";
+import { CardProvider } from './context/CardContext';
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import Loading from "./components/Loading";
@@ -252,12 +253,14 @@ function App() {
           <AuthProvider>
             <TrackingProvider>
               <CartProvider>
-                <FavoritesProvider>
-                  <Router>
-                    <ScrollToTop />
-                    <AppContent />
-                  </Router>
-                </FavoritesProvider>
+                <CardProvider>
+                  <FavoritesProvider>
+                    <Router>
+                      <ScrollToTop />
+                      <AppContent />
+                    </Router>
+                  </FavoritesProvider>
+                </CardProvider>
               </CartProvider>
             </TrackingProvider>
           </AuthProvider>

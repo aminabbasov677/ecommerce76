@@ -404,7 +404,8 @@
   backdrop-filter: blur(10px);
   display: flex;
   justify-content: center;
-  align-items: center;
+  padding-top: 50px;
+  align-items: flex-start;
   z-index: 1000;
   animation: fadeIn 0.3s ease;
 }

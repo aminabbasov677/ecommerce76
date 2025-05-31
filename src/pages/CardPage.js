@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { PlusCircle, Edit, Trash2, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import './CardPage.css';
+import { useCards } from '../context/CardContext';
 
 // Card type definition
 const cardTypes = ['VISA', 'MASTERCARD', 'AMEX', 'DISCOVER'];
@@ -280,37 +281,66 @@ const CardForm = ({ card, onSave, onClose }) => {
   };
 
   const handleSubmit = () => {
-    if (!formData.title || !formData.number || !formData.holderName || !formData.expiry) {
+    // Validate required fields
+    if (!formData.title || !formData.number || !formData.holderName || !formData.expiry || !formData.cvv) {
       alert('Please fill out all required fields');
       return;
     }
 
-    console.log('Saving card:', formData);
+    // Validate card number (should be 16 digits)
+    const cleanCardNumber = formData.number.replace(/\s/g, '');
+    if (cleanCardNumber.length !== 16) {
+      alert('Card number must be 16 digits');
+      return;
+    }
+
+    // Validate expiry date (MM/YY format)
+    if (!/^\d{2}\/\d{2}$/.test(formData.expiry)) {
+      alert('Please enter a valid expiry date (MM/YY)');
+      return;
+    }
+
+    // Validate CVV (3-4 digits)
+    if (!/^\d{3,4}$/.test(formData.cvv)) {
+      alert('CVV must be 3 or 4 digits');
+      return;
+    }
+
+    // Format card number with spaces
+    const formattedCardNumber = cleanCardNumber.match(/.{1,4}/g).join(' ');
+
+    // Save card with formatted data
     onSave({
-      id: card?.id || Date.now().toString(),
       ...formData,
+      number: formattedCardNumber,
     });
   };
 
   const formatCardNumber = (value) => {
-    return value.replace(/\s/g, '').replace(/(.{4})/g, '$1 ').trim();
+    // Remove non-digits
+    const digits = value.replace(/\D/g, '');
+    // Add spaces every 4 digits
+    const formatted = digits.match(/.{1,4}/g)?.join(' ') || digits;
+    return formatted.slice(0, 19); // Max 16 digits + 3 spaces
   };
 
   const formatExpiry = (value) => {
-    value = value.replace(/\D/g, '');
-    if (value.length > 2) {
-      return `${value.slice(0, 2)}/${value.slice(2, 4)}`;
+    // Remove non-digits
+    const digits = value.replace(/\D/g, '');
+    // Format as MM/YY
+    if (digits.length >= 2) {
+      return `${digits.slice(0, 2)}/${digits.slice(2, 4)}`;
     }
-    return value;
+    return digits;
   };
 
   const handleCardNumberChange = (e) => {
-    const formattedValue = formatCardNumber(e.target.value.slice(0, 19));
+    const formattedValue = formatCardNumber(e.target.value);
     setFormData((prev) => ({ ...prev, number: formattedValue }));
   };
 
   const handleExpiryChange = (e) => {
-    const formattedValue = formatExpiry(e.target.value.slice(0, 5));
+    const formattedValue = formatExpiry(e.target.value);
     setFormData((prev) => ({ ...prev, expiry: formattedValue }));
   };
 
@@ -458,35 +488,9 @@ const CardForm = ({ card, onSave, onClose }) => {
 
 // Main CardPage component
 const CardPage = () => {
-  const [cards, setCards] = useState([]);
+  const { cards, addCard, editCard, deleteCard } = useCards();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingCard, setEditingCard] = useState(null);
-
-  useEffect(() => {
-    const savedCards = localStorage.getItem('cards');
-    console.log('Loading cards from localStorage:', savedCards);
-    if (savedCards) {
-      try {
-        const parsedCards = JSON.parse(savedCards);
-        if (Array.isArray(parsedCards)) {
-          setCards(parsedCards);
-        } else {
-          console.error('Stored cards is not an array:', parsedCards);
-          setCards([]);
-        }
-      } catch (error) {
-        console.error('Error parsing saved cards:', error);
-        setCards([]);
-      }
-    }
-  }, []);
-
-  useEffect(() => {
-    if (cards.length > 0) {
-      console.log('Saving cards to localStorage:', cards);
-      localStorage.setItem('cards', JSON.stringify(cards));
-    }
-  }, [cards]);
 
   const handleAddCard = () => {
     setEditingCard(null);
@@ -498,18 +502,17 @@ const CardPage = () => {
     setIsFormOpen(true);
   };
 
-  const handleSaveCard = (card) => {
-    if (editingCard) {
-      setCards(cards.map((c) => (c.id === card.id ? card : c)));
-    } else {
-      setCards([...cards, { ...card, id: Date.now().toString() }]);
-    }
-    setIsFormOpen(false);
-    setEditingCard(null);
+  const handleDeleteCard = (cardId) => {
+    deleteCard(cardId);
   };
 
-  const handleDeleteCard = (id) => {
-    setCards(cards.filter((card) => card.id !== id));
+  const handleSaveCard = (cardData) => {
+    if (editingCard) {
+      editCard({ ...cardData, id: editingCard.id });
+    } else {
+      addCard(cardData);
+    }
+    setIsFormOpen(false);
   };
 
   const handleCloseForm = () => {

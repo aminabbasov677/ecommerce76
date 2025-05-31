@@ -561,7 +561,7 @@
   right: 0;
   bottom: 0;
   background-color: rgba(0, 0, 0, 0.95);
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(10px);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -579,7 +579,7 @@
   box-shadow: 0 0 30px rgba(0, 255, 195, 0.3), 
               0 0 60px rgba(0, 255, 195, 0.1);
   border: 1px solid rgba(0, 255, 195, 0.3);
-  animation: pulseGlow 3s ease-in-out infinite;
+
   position: relative;
   max-height: calc(90vh - 80px);
   overflow-y: auto;

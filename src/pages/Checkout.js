@@ -1,9 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '../context/CartContext';
 import { toast } from 'react-hot-toast';
 import { FaArrowLeft, FaArrowRight, FaCheckCircle } from 'react-icons/fa';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import './Checkout.css';
+import { useCards } from '../context/CardContext';
+import { useTracking } from '../context/TrackingContext';
 
 // Stepper component
 const Stepper = ({ currentStep }) => {
@@ -25,10 +28,48 @@ const Stepper = ({ currentStep }) => {
 
 // Card3D component
 const Card3D = ({ card, isSelected, onSelect }) => {
+  const [isFlipped, setIsFlipped] = useState(false);
+  const [rotation, setRotation] = useState({ x: 0, y: 0 });
+  const cardRef = useRef(null);
+
+  const handleMouseMove = (e) => {
+    if (isFlipped) return;
+
+    const card = cardRef.current;
+    if (!card) return;
+
+    const rect = card.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+
+    const rotateY = ((e.clientX - centerX) / (rect.width / 2)) * 15;
+    const rotateX = -((e.clientY - centerY) / (rect.height / 2)) * 15;
+
+    setRotation({ x: rotateX, y: rotateY });
+  };
+
+  const handleMouseLeave = () => {
+    if (!isFlipped) {
+      setRotation({ x: 0, y: 0 });
+    }
+  };
+
+  const handleClick = () => {
+    setIsFlipped(!isFlipped);
+  };
+
   return (
     <div
+      ref={cardRef}
       className={`card-3d-wrapper ${isSelected ? 'selected' : ''}`}
       onClick={() => onSelect(card)}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      style={{
+        transform: isFlipped 
+          ? 'rotateY(180deg)' 
+          : `rotateX(${rotation.x}deg) rotateY(${rotation.y}deg)`
+      }}
     >
       <div className="card-3d-front">
         <div className="card-3d-content">
@@ -45,6 +86,138 @@ const Card3D = ({ card, isSelected, onSelect }) => {
           <div className="card-type">{card.type}</div>
         </div>
       </div>
+      <div className="card-3d-back">
+        <div className="card-3d-content">
+          <div className="card-magnetic-strip"></div>
+          <div className="card-back-content">
+            <div className="card-security-code">
+              <span>CVV</span>
+              <span className="code">{card.cvv}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// CardCarousel component
+const CardCarousel = ({ cards, onSelectCard }) => {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [startX, setStartX] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'ArrowLeft') {
+        navigatePrev();
+      } else if (e.key === 'ArrowRight') {
+        navigateNext();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [activeIndex, cards.length]);
+
+  const navigateNext = () => {
+    if (cards.length > 1) {
+      setActiveIndex((prev) => (prev + 1) % cards.length);
+    }
+  };
+
+  const navigatePrev = () => {
+    if (cards.length > 1) {
+      setActiveIndex((prev) => (prev - 1 + cards.length) % cards.length);
+    }
+  };
+
+  const handleTouchStart = (e) => {
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    setStartX(clientX);
+    setIsDragging(true);
+  };
+
+  const handleTouchMove = (e) => {
+    if (!isDragging) return;
+
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    const diff = startX - clientX;
+
+    if (Math.abs(diff) > 50) {
+      if (diff > 0) {
+        navigateNext();
+      } else {
+        navigatePrev();
+      }
+      setIsDragging(false);
+    }
+  };
+
+  const handleTouchEnd = () => {
+    setIsDragging(false);
+  };
+
+  return (
+    <div className="carousel-container">
+      <div
+        className="carousel-track"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        onMouseDown={handleTouchStart}
+        onMouseMove={handleTouchMove}
+        onMouseUp={handleTouchEnd}
+        onMouseLeave={handleTouchEnd}
+      >
+        {cards.map((card, index) => {
+          const position = index - activeIndex;
+          let adjustedPosition = position;
+          if (position < -1) adjustedPosition = cards.length - 1 - activeIndex + index;
+          if (position > 1) adjustedPosition = index - cards.length - activeIndex;
+
+          return (
+            <div
+              key={card.id}
+              className={`carousel-item ${index === activeIndex ? 'active' : ''}`}
+              style={{
+                transform: `translateX(${adjustedPosition * 100}%) scale(${
+                  index === activeIndex ? 1 : 0.8
+                })`,
+                zIndex: index === activeIndex ? 10 : 5 - Math.abs(adjustedPosition),
+                opacity: Math.abs(adjustedPosition) > 1 ? 0 : 1,
+              }}
+            >
+              <Card3D
+                card={card}
+                isSelected={index === activeIndex}
+                onSelect={onSelectCard}
+              />
+            </div>
+          );
+        })}
+      </div>
+
+      {cards.length > 1 && (
+        <div className="carousel-controls">
+          <button className="carousel-control prev" onClick={navigatePrev}>
+            <ChevronLeft size={24} />
+          </button>
+          <div className="carousel-indicators">
+            {cards.map((_, index) => (
+              <button
+                key={index}
+                className={`carousel-indicator ${index === activeIndex ? 'active' : ''}`}
+                onClick={() => setActiveIndex(index)}
+                aria-label={`Go to card ${index + 1}`}
+              />
+            ))}
+          </div>
+          <button className="carousel-control next" onClick={navigateNext}>
+            <ChevronRight size={24} />
+          </button>
+        </div>
+      )}
     </div>
   );
 };
@@ -56,7 +229,7 @@ const OrderSummary = ({ items, total, onNext }) => {
   const grandTotal = total + shippingCost + tax;
 
   const handleNext = () => {
-    if (items.length === 0) {
+    if (!items || items.length === 0) {
       toast.error('Your cart is empty. Please add items to proceed.');
       return;
     }
@@ -71,7 +244,7 @@ const OrderSummary = ({ items, total, onNext }) => {
       className="order-summary"
     >
       <h2 className="section-title">Order Summary</h2>
-      {items.length === 0 ? (
+      {!items || items.length === 0 ? (
         <p className="empty-cart">No items in cart.</p>
       ) : (
         <div className="order-items">
@@ -126,7 +299,13 @@ const OrderSummary = ({ items, total, onNext }) => {
 const ShippingForm = ({ shippingData, setShippingData, onNext }) => {
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setShippingData((prev) => ({ ...prev, [name]: value }));
+    if (name === 'phone') {
+      // Only allow numbers, +, and spaces
+      const formattedValue = value.replace(/[^\d+\s]/g, '');
+      setShippingData((prev) => ({ ...prev, [name]: formattedValue }));
+    } else {
+      setShippingData((prev) => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleNext = () => {
@@ -139,7 +318,7 @@ const ShippingForm = ({ shippingData, setShippingData, onNext }) => {
       toast.error('Please enter a valid email address');
       return;
     }
-    if (!/^\+?\d{10,15}$/.test(phone)) {
+    if (!/^\+?\d{10,15}$/.test(phone.replace(/\s/g, ''))) {
       toast.error('Please enter a valid phone number');
       return;
     }
@@ -236,6 +415,7 @@ const ShippingForm = ({ shippingData, setShippingData, onNext }) => {
             value={shippingData.phone}
             onChange={handleChange}
             placeholder="+994123456789"
+            pattern="^\+?\d{10,15}$"
             required
           />
         </div>
@@ -268,23 +448,9 @@ const ShippingForm = ({ shippingData, setShippingData, onNext }) => {
 
 // Payment Method component
 const PaymentForm = ({ paymentData, setPaymentData, onNext, onBack }) => {
-  const [cards, setCards] = useState([]);
+  const { cards } = useCards();
   const [selectedCard, setSelectedCard] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState('card');
-
-  useEffect(() => {
-    const savedCards = localStorage.getItem('cards');
-    if (savedCards) {
-      try {
-        const parsedCards = JSON.parse(savedCards);
-        if (Array.isArray(parsedCards)) {
-          setCards(parsedCards);
-        }
-      } catch (error) {
-        console.error('Error parsing saved cards:', error);
-      }
-    }
-  }, []);
 
   const handleCardSelect = (card) => {
     setSelectedCard(card);
@@ -308,6 +474,17 @@ const PaymentForm = ({ paymentData, setPaymentData, onNext, onBack }) => {
     const { name, value } = e.target;
     if (name === 'cardNumber') {
       const formattedValue = formatCardNumber(value);
+      setPaymentData((prev) => ({ ...prev, [name]: formattedValue }));
+    } else if (name === 'cvv') {
+      // Only allow numbers and max 3 digits
+      const numericValue = value.replace(/\D/g, '').slice(0, 3);
+      setPaymentData((prev) => ({ ...prev, [name]: numericValue }));
+    } else if (name === 'expiry') {
+      // Format expiry date as MM/YY
+      let formattedValue = value.replace(/\D/g, '');
+      if (formattedValue.length >= 2) {
+        formattedValue = formattedValue.slice(0, 2) + '/' + formattedValue.slice(2, 4);
+      }
       setPaymentData((prev) => ({ ...prev, [name]: formattedValue }));
     } else {
       setPaymentData((prev) => ({ ...prev, [name]: value }));
@@ -392,19 +569,14 @@ const PaymentForm = ({ paymentData, setPaymentData, onNext, onBack }) => {
       </div>
       {paymentMethod === 'card' && (
         <>
-          {cards.length > 0 && (
+          {cards && cards.length > 0 ? (
             <div className="saved-cards">
               <h3>Saved Cards</h3>
-              <div className="cards-list">
-                {cards.map((card) => (
-                  <Card3D
-                    key={card.id}
-                    card={card}
-                    isSelected={selectedCard && selectedCard.id === card.id}
-                    onSelect={handleCardSelect}
-                  />
-                ))}
-              </div>
+              <CardCarousel cards={cards} onSelectCard={handleCardSelect} />
+            </div>
+          ) : (
+            <div className="no-cards-message">
+              <p>No saved cards found. Please add a card in the Card Manager first.</p>
             </div>
           )}
           <div className="card-form">
@@ -432,6 +604,7 @@ const PaymentForm = ({ paymentData, setPaymentData, onNext, onBack }) => {
                   onChange={handleChange}
                   placeholder="MM/YY"
                   maxLength={5}
+                  pattern="\d{2}/\d{2}"
                   required
                 />
               </div>
@@ -444,7 +617,8 @@ const PaymentForm = ({ paymentData, setPaymentData, onNext, onBack }) => {
                   value={paymentData.cvv}
                   onChange={handleChange}
                   placeholder="123"
-                  maxLength={4}
+                  maxLength={3}
+                  pattern="\d{3}"
                   required
                 />
               </div>
@@ -567,6 +741,7 @@ const OrderConfirmed = ({ orderId }) => {
 // Main Checkout component
 const Checkout = () => {
   const { state, dispatch } = useCart();
+  const { dispatch: trackingDispatch } = useTracking();
   const [step, setStep] = useState(1);
   const [isProcessing, setIsProcessing] = useState(false);
   const [orderConfirmed, setOrderConfirmed] = useState(false);
@@ -601,14 +776,35 @@ const Checkout = () => {
   const handleConfirm = () => {
     setIsProcessing(true);
     setTimeout(() => {
-      dispatch({ type: "CHECKOUT" }); // Clear cart and add to tracking
+      // Create a single order with all items
+      const order = {
+        id: `ORD-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        products: state.items.map(item => ({
+          ...item,
+          image: item.image || 'https://via.placeholder.com/300x200',
+          title: item.title || 'Product',
+          price: item.price || 0
+        })),
+        status: 'In Warehouse',
+        timestamp: Date.now(),
+        shippingInfo: shippingData,
+        paymentInfo: paymentData,
+        total: state.total
+      };
+
+      // Add single order with unique ID
+      trackingDispatch({ type: 'ADD_ORDER', payload: [order] });
+      
+      // Clear cart after successful order
+      dispatch({ type: 'CLEAR_CART' });
+      
       setIsProcessing(false);
-      setOrderConfirmed(true);
-      toast.success("Order placed successfully!");
+      toast.success('Order placed successfully!');
+      setStep(5);
     }, 2000);
   };
 
-  if (orderConfirmed) {
+  if (step === 5) {
     return <OrderConfirmed orderId={orderId} />;
   }
 

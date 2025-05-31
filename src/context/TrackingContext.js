@@ -1,73 +1,107 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 
-const initialState = {
-  orders: []
-};
+const TrackingContext = createContext();
+
+const STAGES = [
+  { name: 'In Warehouse', duration: 0 },
+  { name: 'Shipped', duration: 10000 }, // 10 seconds
+  { name: 'Arrived in Country', duration: 20000 }, // 20 seconds
+  { name: 'At Post Office', duration: 25000 }, // 25 seconds
+  { name: 'Delivered', duration: 30000 }, // 30 seconds
+];
 
 const trackingReducer = (state, action) => {
   switch (action.type) {
-    case 'ADD_ORDER':
-      return {
-        ...state,
-        orders: [...state.orders, ...action.payload]
-      };
-    case 'UPDATE_STATUS':
-      return {
-        ...state,
-        orders: state.orders.map(order => 
-          order.id === action.payload.id 
-            ? { ...order, status: action.payload.status }
-            : order
-        )
-      };
-    case 'DELETE_ORDER':
-      return {
-        ...state,
-        orders: state.orders.filter(order => order.id !== action.payload)
-      };
-    case 'LOAD_ORDERS':
-      return {
-        ...state,
-        orders: action.payload
-      };
+    case "ADD_ORDER":
+      const newOrders = action.payload.map(order => ({
+        ...order,
+        id: order.id || `order_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        timestamp: Date.now(),
+        status: 'In Warehouse',
+        products: order.products.map(product => ({
+          ...product,
+          id: product.id || `product_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          status: 'In Warehouse'
+        }))
+      }));
+
+      const existingOrderIds = new Set(state.orders.map(order => order.id));
+      const uniqueNewOrders = newOrders.filter(order => !existingOrderIds.has(order.id));
+
+      if (uniqueNewOrders.length === 0) {
+        return state;
+      }
+
+      const updatedOrders = [...state.orders, ...uniqueNewOrders];
+      localStorage.setItem('orders', JSON.stringify(updatedOrders));
+      return { ...state, orders: updatedOrders };
+
+    case "UPDATE_ORDER_STATUS":
+      const ordersWithUpdatedStatus = state.orders.map(order => {
+        if (order.id === action.payload.id) {
+          const elapsed = Date.now() - order.timestamp;
+          const currentStage = STAGES.find(stage => elapsed < stage.duration) || STAGES[STAGES.length - 1];
+          
+          // Only update if status has changed
+          if (order.status !== currentStage.name) {
+            return {
+              ...order,
+              status: currentStage.name,
+              products: order.products.map(product => ({
+                ...product,
+                status: currentStage.name
+              }))
+            };
+          }
+        }
+        return order;
+      });
+
+      localStorage.setItem('orders', JSON.stringify(ordersWithUpdatedStatus));
+      return { ...state, orders: ordersWithUpdatedStatus };
+
+    case "DELETE_ORDER":
+      const filteredOrders = state.orders.filter(order => order.id !== action.payload);
+      localStorage.setItem('orders', JSON.stringify(filteredOrders));
+      return { ...state, orders: filteredOrders };
+
+    case "LOAD_ORDERS":
+      try {
+        const storedOrders = JSON.parse(localStorage.getItem('orders')) || [];
+        return { ...state, orders: storedOrders };
+      } catch (error) {
+        console.error('Error loading orders:', error);
+        localStorage.removeItem('orders');
+        return { ...state, orders: [] };
+      }
+
     default:
       return state;
   }
 };
 
-const TrackingContext = createContext();
-
 export const TrackingProvider = ({ children }) => {
-  const [state, dispatch] = useReducer(trackingReducer, initialState);
+  const [state, dispatch] = useReducer(trackingReducer, { orders: [] });
 
-  // Load orders from localStorage on initial render
   useEffect(() => {
-    const loadOrders = () => {
-      const storedOrders = localStorage.getItem('orders');
-      if (storedOrders) {
-        try {
-          const orders = JSON.parse(storedOrders);
-          if (Array.isArray(orders) && orders.length > 0) {
-            dispatch({ type: 'LOAD_ORDERS', payload: orders });
-          }
-        } catch (error) {
-          console.error('Error loading orders from localStorage:', error);
+    // Load orders from localStorage on initial render
+    const storedOrders = JSON.parse(localStorage.getItem('orders') || '[]');
+    dispatch({ type: "LOAD_ORDERS", payload: storedOrders });
+
+    // Set up background status update
+    const interval = setInterval(() => {
+      state.orders.forEach(order => {
+        const elapsed = Date.now() - order.timestamp;
+        const currentStage = STAGES.find(stage => elapsed < stage.duration) || STAGES[STAGES.length - 1];
+        
+        // Only dispatch if status needs to be updated
+        if (order.status !== currentStage.name) {
+          dispatch({ type: "UPDATE_ORDER_STATUS", payload: { id: order.id } });
         }
-      }
-    };
+      });
+    }, 1000); // Check every second
 
-    loadOrders();
-  }, []);
-
-  // Save orders to localStorage whenever they change
-  useEffect(() => {
-    if (state.orders.length > 0) {
-      try {
-        localStorage.setItem('orders', JSON.stringify(state.orders));
-      } catch (error) {
-        console.error('Error saving orders to localStorage:', error);
-      }
-    }
+    return () => clearInterval(interval);
   }, [state.orders]);
 
   return (

@@ -235,8 +235,9 @@
 .product-card .content {
   flex: 1;
   display: flex;
+  margin-top: 40px;
   flex-direction: column;
-  padding-bottom: 80px;
+  
 }
 
 /* Product Card Image */
