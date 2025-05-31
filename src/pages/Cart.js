@@ -20,11 +20,6 @@ function Cart() {
     toast.success("Item removed from cart");
   };
 
-  const handleCheckout = () => {
-    dispatch({ type: "CHECKOUT" });
-    toast.success("Checkout successful! Order placed.");
-  };
-
   if (!state.items.length) {
     return (
       <motion.div
@@ -106,14 +101,14 @@ function Cart() {
           <span>Total:</span>
           <span>${state.total.toFixed(2)}</span>
         </div>
-        <motion.button
+        <motion.a
+          href="/Checkout"
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          onClick={handleCheckout}
           className="checkout-btn"
         >
           Proceed to Checkout
-        </motion.button>
+        </motion.a>
       </div>
     </motion.div>
   );

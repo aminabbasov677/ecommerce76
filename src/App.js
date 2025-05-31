@@ -35,6 +35,7 @@ import Tracking from "./pages/Tracking";
 import FavoritesPage from "./pages/FavoritesPage";
 import AIChat from "./pages/AIChat";
 import CardPage from "./pages/CardPage.js";
+import Checkout from "./pages/Checkout.js";
 import DailyActivityCharts from "./pages/DailyActivityCharts.js";
 import ProductViewStatistics from "./pages/ProductViewStatistics.js";
 import TimeSpentStatistics from "./pages/TimeSpentStatistics.js";
@@ -228,6 +229,7 @@ function AppContent() {
             <Route path="/product/:id" element={<ProductDetail />} />
             <Route path="/search" element={<Search />} />
             <Route path="/tracking" element={<Tracking />} />
+            <Route path="/Checkout" element={<Checkout />} />
             <Route path="/favorites" element={<FavoritesPage />} />
             <Route path="/dailyActivityCharts" element={<DailyActivityCharts />} />
             <Route path="/productViewStatistics" element={<ProductViewStatistics />} />

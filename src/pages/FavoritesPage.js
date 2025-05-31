@@ -7,7 +7,12 @@ import toast from "react-hot-toast";
 import "./Home.css"; // Reusing Home.css for consistent styling
 
 function FavoritesPage() {
-  const { favorites, toggleFavorite } = useFavorites();
+  const { favorites, dispatch } = useFavorites();
+
+  const removeFromFavorites = (product) => {
+    dispatch({ type: "REMOVE_FROM_FAVORITES", payload: product });
+    toast.success("Removed from favorites!");
+  };
 
   const renderStars = (rating) => {
     const stars = [];
@@ -60,10 +65,7 @@ function FavoritesPage() {
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    onClick={() => {
-                      toggleFavorite(product);
-                      toast.success("Removed from favorites!");
-                    }}
+                    onClick={() => removeFromFavorites(product)}
                     className="favorite-btn"
                     aria-label="Remove from favorites"
                   >

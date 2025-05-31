@@ -2,10 +2,10 @@ import React, { useState, useEffect, useRef } from 'react';
 import { PlusCircle, Edit, Trash2, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import './CardPage.css';
 
-// Card type definition (from Card.ts)
+// Card type definition
 const cardTypes = ['VISA', 'MASTERCARD', 'AMEX', 'DISCOVER'];
 
-// Card component (from Card3D.tsx)
+// Card3D component
 const Card3D = ({ card, isActive, onEdit, onDelete }) => {
   const [rotation, setRotation] = useState({ x: 0, y: 0 });
   const [isFlipped, setIsFlipped] = useState(false);
@@ -111,7 +111,7 @@ const Card3D = ({ card, isActive, onEdit, onDelete }) => {
   );
 };
 
-// CardCarousel component (from CardCarousel.tsx)
+// CardCarousel component
 const CardCarousel = ({ cards, onEditCard, onDeleteCard }) => {
   const [activeIndex, setActiveIndex] = useState(0);
   const [startX, setStartX] = useState(0);
@@ -233,7 +233,7 @@ const CardCarousel = ({ cards, onEditCard, onDeleteCard }) => {
   );
 };
 
-// CardForm component (from CardForm.tsx)
+// CardForm component
 const CardForm = ({ card, onSave, onClose }) => {
   const [formData, setFormData] = useState({
     title: '',
@@ -279,14 +279,13 @@ const CardForm = ({ card, onSave, onClose }) => {
     setFormData((prev) => ({ ...prev, headerColor: color }));
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
+  const handleSubmit = () => {
     if (!formData.title || !formData.number || !formData.holderName || !formData.expiry) {
       alert('Please fill out all required fields');
       return;
     }
 
+    console.log('Saving card:', formData);
     onSave({
       id: card?.id || Date.now().toString(),
       ...formData,
@@ -325,7 +324,7 @@ const CardForm = ({ card, onSave, onClose }) => {
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="card-form">
+        <div className="card-form" onClick={(e) => e.stopPropagation()}>
           <div className="form-group">
             <label htmlFor="title">Card Title</label>
             <input
@@ -447,17 +446,17 @@ const CardForm = ({ card, onSave, onClose }) => {
             <button type="button" className="cancel-btn" onClick={onClose}>
               Cancel
             </button>
-            <button type="submit" className="save-btn">
+            <button type="button" className="save-btn" onClick={handleSubmit}>
               Save Card
             </button>
           </div>
-        </form>
+        </div>
       </div>
     </div>
   );
 };
 
-// Main CardPage component (from CardManager.tsx)
+// Main CardPage component
 const CardPage = () => {
   const [cards, setCards] = useState([]);
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -465,9 +464,16 @@ const CardPage = () => {
 
   useEffect(() => {
     const savedCards = localStorage.getItem('cards');
+    console.log('Loading cards from localStorage:', savedCards);
     if (savedCards) {
       try {
-        setCards(JSON.parse(savedCards));
+        const parsedCards = JSON.parse(savedCards);
+        if (Array.isArray(parsedCards)) {
+          setCards(parsedCards);
+        } else {
+          console.error('Stored cards is not an array:', parsedCards);
+          setCards([]);
+        }
       } catch (error) {
         console.error('Error parsing saved cards:', error);
         setCards([]);
@@ -476,7 +482,10 @@ const CardPage = () => {
   }, []);
 
   useEffect(() => {
-    localStorage.setItem('cards', JSON.stringify(cards));
+    if (cards.length > 0) {
+      console.log('Saving cards to localStorage:', cards);
+      localStorage.setItem('cards', JSON.stringify(cards));
+    }
   }, [cards]);
 
   const handleAddCard = () => {
@@ -511,7 +520,7 @@ const CardPage = () => {
   return (
     <div className="card-manager-container">
       <div className="page-header">
-        <h1 className="cyber-title">3D Card Manager</h1>
+        <h1 className="cyber-title">Card Manager</h1>
         <button className="cyber-button add-card-btn" onClick={handleAddCard}>
           <PlusCircle className="button-icon" />
           <span>Add Card</span>

@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import { useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCart } from "../context/CartContext";
+import { useFavorites } from "../context/FavoritesContext";
+import { FaHeart, FaRegHeart, FaStar, FaStarHalfAlt, FaRegStar } from "react-icons/fa";
 import toast from "react-hot-toast";
 import "./Search.css";
 
@@ -24,6 +26,7 @@ const Search = () => {
   const location = useLocation();
   const query = new URLSearchParams(location.search).get("q");
   const { dispatch } = useCart();
+  const { favorites, toggleFavorite } = useFavorites();
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -141,6 +144,23 @@ const Search = () => {
       setCurrentPage(pageNumber);
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
+  };
+
+  const renderStars = (rating) => {
+    const stars = [];
+    const fullStars = Math.floor(rating);
+    const hasHalfStar = rating - fullStars >= 0.5;
+
+    for (let i = 0; i < 5; i++) {
+      if (i < fullStars) {
+        stars.push(<FaStar key={i} className="star-icon filled" />);
+      } else if (i === fullStars && hasHalfStar) {
+        stars.push(<FaStarHalfAlt key={i} className="star-icon filled" />);
+      } else {
+        stars.push(<FaRegStar key={i} className="star-icon" />);
+      }
+    }
+    return stars;
   };
 
   if (loading) {
@@ -397,14 +417,27 @@ const Search = () => {
               React.createElement('p', { className: 'product-price' }, '$', product.price.toFixed(2))
             ),
             React.createElement(
-              motion.button,
-              {
-                whileHover: { scale: 1.05 },
-                whileTap: { scale: 0.95 },
-                onClick: () => addToCart(product),
-                className: 'add-to-cart-btn btn-primary'
-              },
-              'Add to Cart'
+              'div',
+              { className: 'rating-favorite-container' },
+              React.createElement(
+                'div',
+                { className: 'star-rating' },
+                renderStars(product.rating.rate)
+              ),
+              React.createElement(
+                'button',
+                {
+                  className: 'favorite-btn',
+                  onClick: () => toggleFavorite(product),
+                  'aria-label': favorites.some(fav => fav.id === product.id) ? "Remove from favorites" : "Add to favorites"
+                },
+                React.createElement(
+                  FaHeart,
+                  {
+                    className: `heart-icon ${favorites.some(fav => fav.id === product.id) ? "filled" : ""}`
+                  }
+                )
+              )
             )
           )
         ))

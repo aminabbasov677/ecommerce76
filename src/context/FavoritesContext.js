@@ -8,7 +8,7 @@ const favoritesReducer = (state, action) => {
       return [...state, action.payload];
     case "REMOVE_FROM_FAVORITES":
       return state.filter((item) => item.id !== action.payload.id);
-    case "SET_FAVORITES":
+    case "LOAD_FAVORITES":
       return action.payload;
     default:
       return state;
@@ -20,19 +20,25 @@ export const FavoritesProvider = ({ children }) => {
 
   // Load favorites from localStorage on mount
   useEffect(() => {
-    const savedFavorites = localStorage.getItem('favorites');
+    const savedFavorites = localStorage.getItem("favorites");
     if (savedFavorites) {
-      dispatch({ type: "SET_FAVORITES", payload: JSON.parse(savedFavorites) });
+      try {
+        const parsedFavorites = JSON.parse(savedFavorites);
+        dispatch({ type: "LOAD_FAVORITES", payload: parsedFavorites });
+      } catch (error) {
+        console.error("Error parsing favorites from localStorage:", error);
+        localStorage.removeItem("favorites");
+      }
     }
   }, []);
 
   // Save favorites to localStorage whenever they change
   useEffect(() => {
-    localStorage.setItem('favorites', JSON.stringify(favorites));
+    localStorage.setItem("favorites", JSON.stringify(favorites));
   }, [favorites]);
 
   const toggleFavorite = (product) => {
-    const isFavorite = favorites.some(fav => fav.id === product.id);
+    const isFavorite = favorites.some((fav) => fav.id === product.id);
     if (isFavorite) {
       dispatch({ type: "REMOVE_FROM_FAVORITES", payload: product });
     } else {
@@ -41,10 +47,16 @@ export const FavoritesProvider = ({ children }) => {
   };
 
   return (
-    <FavoritesContext.Provider value={{ favorites, toggleFavorite }}>
+    <FavoritesContext.Provider value={{ favorites, dispatch, toggleFavorite }}>
       {children}
     </FavoritesContext.Provider>
   );
 };
 
-export const useFavorites = () => useContext(FavoritesContext);
+export const useFavorites = () => {
+  const context = useContext(FavoritesContext);
+  if (!context) {
+    throw new Error("useFavorites must be used within a FavoritesProvider");
+  }
+  return context;
+};

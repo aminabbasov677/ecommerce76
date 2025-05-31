@@ -16,28 +16,40 @@ const AIChat = () => {
   const getAIResponse = async (userInput) => {
     try {
       setIsLoading(true);
-      
-      const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyBbtMa5ZHxO9zQroMqKz_2Bu6sTtbQLdqY', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          contents: userInput
-        })
-      });
-
+  
+      const response = await fetch(
+        'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyBbtMa5ZHxO9zQroMqKz_2Bu6sTtbQLdqY',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            contents: [
+              {
+                parts: [
+                  {
+                    text: userInput
+                  }
+                ]
+              }
+            ]
+          })
+        }
+      );
+  
       if (!response.ok) {
         throw new Error('Failed to get AI response');
       }
-
+  
       const data = await response.json();
-      if (data.text) {
-        return data.text;
-      }
-      return "I'm here to help with your shopping needs. What would you like to know?";
+      const aiText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+  
+      return aiText || "I'm here to help with your shopping needs. What would you like to know?";
     } catch (error) {
       console.error('Error getting AI response:', error);
+  
+      // fallback mock replies
       const mockResponses = {
         "hello": "Hello! I'm your AI shopping assistant. How can I help you today?",
         "hi": "Hi there! I'm here to help with your shopping needs. What would you like to know?",
@@ -46,19 +58,20 @@ const AIChat = () => {
         "shipping": "We offer fast shipping options:\n- Standard delivery (3-5 business days)\n- Express delivery (1-2 business days)\n- Free shipping on orders over $50",
         "return": "We have a 30-day return policy. Items must be unused and in original packaging. Would you like me to explain the return process?"
       };
-
-      const input = userInput.toLowerCase();
+  
+      const lower = userInput.toLowerCase();
       for (const [key, value] of Object.entries(mockResponses)) {
-        if (input.includes(key)) {
+        if (lower.includes(key)) {
           return value;
         }
       }
-
+  
       return "I'm here to help with your shopping needs. You can ask me about products, prices, shipping, returns, or anything else related to our store. What would you like to know?";
     } finally {
       setIsLoading(false);
     }
   };
+  
 
   const handleSubmit = async (e) => {
     e.preventDefault();

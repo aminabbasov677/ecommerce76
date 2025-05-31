@@ -9,33 +9,32 @@ const initialState = {
 const cartReducer = (state, action) => {
   switch (action.type) {
     case "ADD_TO_CART": {
-      console.log("ADD_TO_CART Payload:", action.payload); // Debug log
+      console.log("ADD_TO_CART Payload:", action.payload);
       const existingItem = state.items.find(
         (item) => item.id === action.payload.id
       );
       
       if (existingItem) {
-        // If item exists, update its quantity
         return {
           ...state,
           items: state.items.map((item) =>
             item.id === action.payload.id
-              ? { ...item, quantity: item.quantity + action.payload.quantity }
+              ? { ...item, quantity: item.quantity + (action.payload.quantity || 1) }
               : item
           ),
-          total: state.total + (action.payload.price * action.payload.quantity),
+          total: state.total + (action.payload.price * (action.payload.quantity || 1)),
         };
       }
       
-      // If item doesn't exist, add it with the specified quantity
       return {
         ...state,
-        items: [...state.items, { ...action.payload }],
-        total: state.total + (action.payload.price * action.payload.quantity),
+        items: [...state.items, { ...action.payload, quantity: action.payload.quantity || 1 }],
+        total: state.total + (action.payload.price * (action.payload.quantity || 1)),
       };
     }
     case "REMOVE_FROM_CART": {
       const item = state.items.find((item) => item.id === action.payload);
+      if (!item) return state;
       return {
         ...state,
         items: state.items.filter((item) => item.id !== action.payload),
@@ -45,6 +44,7 @@ const cartReducer = (state, action) => {
     case "UPDATE_QUANTITY": {
       const { id, quantity } = action.payload;
       const item = state.items.find((item) => item.id === id);
+      if (!item) return state;
       const quantityDiff = quantity - item.quantity;
       return {
         ...state,
@@ -85,45 +85,70 @@ export const CartProvider = ({ children }) => {
     if (action.type === "CHECKOUT" && trackingContext?.dispatch) {
       const orderId = Date.now();
       const trackingNumber = generateTrackingNumber();
+      
+      // Create orders for each item in the cart
       const orders = state.items.map(item => ({
         id: `${item.id}-${orderId}`,
-        product: item,
+        product: {
+          ...item,
+          image: item.image || 'default-image-url.jpg',
+          title: item.title || 'Product',
+          price: item.price || 0
+        },
         status: 'In Warehouse',
         timestamp: Date.now(),
         orderId,
         trackingNumber,
       }));
-      trackingContext.dispatch({ type: "ADD_ORDER", payload: orders });
+
+      // Save orders to localStorage first
       const storedOrders = JSON.parse(localStorage.getItem('orders') || '[]');
       storedOrders.push(...orders);
       localStorage.setItem('orders', JSON.stringify(storedOrders));
+
+      // Then add orders to tracking context
+      trackingContext.dispatch({ type: "ADD_ORDER", payload: orders });
+      
+      // Finally clear the cart
+      dispatch({ type: "CLEAR_CART" });
     }
     dispatch(action);
   };
 
   useEffect(() => {
-    localStorage.setItem("cart", JSON.stringify(state));
-    console.log("Saved Cart to localStorage:", state); // Debug log
-  }, [state]);
-
-  useEffect(() => {
     const savedCart = localStorage.getItem("cart");
-    const cartVersion = localStorage.getItem("cartVersion");
-    const currentVersion = "1.0.0"; // Increment if schema changes
-
-    if (savedCart && cartVersion === currentVersion) {
-      const parsedCart = JSON.parse(savedCart);
-      console.log("Loaded Cart from localStorage:", parsedCart); // Debug log
-      dispatch({ type: "CLEAR_CART" });
-      parsedCart.items.forEach((item) => {
-        dispatch({ type: "ADD_TO_CART", payload: { ...item, quantity: item.quantity || 1 } });
-      });
-    } else {
-      console.log("Clearing outdated cart data"); // Debug log
-      localStorage.removeItem("cart");
-      localStorage.setItem("cartVersion", currentVersion);
+    if (savedCart) {
+      try {
+        const parsedCart = JSON.parse(savedCart);
+        console.log("Loaded Cart from localStorage:", parsedCart);
+        if (parsedCart.items && Array.isArray(parsedCart.items)) {
+          parsedCart.items.forEach((item) => {
+            if (item.id && item.price && item.quantity) {
+              dispatch({ 
+                type: "ADD_TO_CART", 
+                payload: { 
+                  ...item, 
+                  quantity: Number(item.quantity) || 1 
+                } 
+              });
+            }
+          });
+        }
+      } catch (error) {
+        console.error("Error parsing cart from localStorage:", error);
+        localStorage.removeItem("cart");
+      }
     }
   }, []);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("cart", JSON.stringify(state));
+      console.log("Saved Cart to localStorage:", state);
+    } catch (error) {
+      console.error("Error saving cart to localStorage:", error);
+    }
+  }, [state]);
 
   return (
     <CartContext.Provider value={{ state, dispatch: enhancedDispatch }}>

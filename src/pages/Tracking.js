@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -6,6 +5,7 @@ import { useTracking } from '../context/TrackingContext';
 import { useCart } from '../context/CartContext';
 import { Chart as ChartJS, LineElement, PointElement, CategoryScale, LinearScale, Tooltip, Legend } from 'chart.js';
 import { Line } from 'react-chartjs-2';
+import { FaTrash } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import './Tracking.css';
 
@@ -86,6 +86,11 @@ function Tracking() {
         bodyFont: { family: "'Orbitron', sans-serif" },
       },
     },
+  };
+
+  const handleDeleteOrder = (orderId) => {
+    trackingDispatch({ type: 'DELETE_ORDER', payload: orderId });
+    toast.success('Order deleted successfully');
   };
 
   if (trackingState.orders.length === 0) {
@@ -177,6 +182,14 @@ function Tracking() {
                 whileTap={{ scale: 0.95 }}
               >
                 Track Order
+              </motion.button>
+              <motion.button
+                className="delete-order-btn"
+                onClick={() => handleDeleteOrder(order.id)}
+                whileHover={{ scale: 1.05, rotateX: 5 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <FaTrash />
               </motion.button>
             </div>
           </motion.div>

@@ -20,19 +20,19 @@
 
 /* Container */
 .ai-chat-container {
-
   max-width: 1400px;
   margin: 0 auto;
   color: #f1f1f1;
   background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
-  min-height: 90vh;
+  min-height: calc(100vh - 80px); /* Adjust for navbar height */
   font-family: "Orbitron", sans-serif;
   position: relative;
   overflow: hidden;
   box-shadow: 0 0 50px rgba(0, 255, 195, 0.2);
   border-radius: 2rem;
-  margin-top: 1rem;
+  margin-top: 2rem; /* Added margin to move it lower */
   margin-bottom: 1rem;
+  padding: 4rem;
 }
 
 /* Header */
@@ -214,14 +214,23 @@
   width: 200%;
   height: 200%;
 }
-
-/* Responsive */
-@media (max-width: 800px) {
+@media (max-width: 1200px) {
   .ai-chat-container {
-    padding: 8rem 1rem 8rem;
+    padding: 9rem;
     border-radius: 1.5rem;
-    margin-top: 0.5rem;
+    margin-top: 3rem; /* Adjusted for mobile */
     margin-bottom: 0.5rem;
+    min-height: calc(100vh - 70px);
+  }
+}
+/* Responsive */
+@media (max-width: 810px) {
+  .ai-chat-container {
+    padding: 10rem;
+    border-radius: 1.5rem;
+    margin-top: 1.5rem; /* Adjusted for mobile */
+    margin-bottom: 0.5rem;
+    min-height: calc(100vh - 70px);
   }
   .chat-title {
     font-size: 1.5rem;
@@ -253,14 +262,30 @@
     font-size: 1rem;
   }
 }
+@media (max-width: 500px) {
+ .chat-header{
+margin-left: -160px;
+}
+.chat-title{
+  font-size: 1rem;
+}
+.back-button{
+  font-size: 0.4rem;
+}
+.chat-messages{
+width: 50vw;
+margin-left: -100px;
+}
+}
 
 /* Extra small screens */
 @media (max-width: 250px) {
   .ai-chat-container {
-    padding: 11rem 0.5rem 6rem;
+    padding: 0.5rem;
     border-radius: 1rem;
-    margin-top: 0.25rem;
+    margin-top: 1rem; /* Adjusted for extra small screens */
     margin-bottom: 0.25rem;
+    min-height: calc(100vh - 60px);
   }
   .chat-title {
     font-size: 1.2rem;

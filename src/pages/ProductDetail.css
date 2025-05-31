@@ -192,8 +192,11 @@
 }
 
 /* Add to Cart Button */
-.add-to-cart-button {
-  padding: 14px 28px;
+.add-to-cart-btn {
+  width: auto !important;
+
+  height: 45px;
+  padding: 12px 24px;
   font-size: 1rem;
   font-weight: 700;
   background: linear-gradient(45deg, #00ffc3, #00d1ff);
@@ -207,7 +210,18 @@
   position: relative;
   overflow: hidden;
   text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  white-space: nowrap;
 }
+
+.cart-icon {
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
 .add-to-cart-button:hover {
   background: linear-gradient(45deg, #00d1ff, #00ffc3);
   transform: scale(1.05);

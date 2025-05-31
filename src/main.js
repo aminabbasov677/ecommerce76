@@ -7,6 +7,7 @@ import 'slick-carousel/slick/slick-theme.css';
 import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
+import { TrackingProvider } from './context/TrackingContext';
 
 console.log('Starting application initialization...');
 
@@ -37,9 +38,11 @@ const renderApp = () => {
       <React.StrictMode>
         <ThemeProvider>
           <AuthProvider>
-            <CartProvider>
-              <App />
-            </CartProvider>
+            <TrackingProvider>
+              <CartProvider>
+                <App />
+              </CartProvider>
+            </TrackingProvider>
           </AuthProvider>
         </ThemeProvider>
       </React.StrictMode>

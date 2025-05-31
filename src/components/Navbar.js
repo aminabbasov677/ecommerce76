@@ -173,27 +173,6 @@ function Navbar() {
                     >
                       Card
                     </Link>
-                    <Link
-                      to="/dailyActivityCharts"
-                      className="dropdown-item"
-                      onClick={() => setIsProfileDropdownOpen(false)}
-                    >
-                      Daily Activity Charts
-                    </Link>
-                    <Link
-                      to="/productViewStatistics"
-                      className="dropdown-item"
-                      onClick={() => setIsProfileDropdownOpen(false)}
-                    >
-                     Product Statistics
-                    </Link>
-                    <Link
-                      to="/timeSpentStatistics"
-                      className="dropdown-item"
-                      onClick={() => setIsProfileDropdownOpen(false)}
-                    >
-                     Time Statistics
-                    </Link>
                     <button
                       className="dropdown-item"
                       onClick={handleSignOut}
@@ -301,28 +280,6 @@ function Navbar() {
                 >
                   Cart 
                 </Link>
-                <Link
-                  to="/dailyActivityCharts"
-                  className="mobile-link"
-                  onClick={() => setIsMobilePopupOpen(false)}
-                >
-                  Daily Activity Charts
-                </Link>
-              
-                    <Link
-                       to="/productViewStatistics"
-                       className="mobile-link"
-                       onClick={() => setIsMobilePopupOpen(false)}
-                    >
-                     Product Statistics
-                    </Link>
-                    <Link
-                      to="/timeSpentStatistics"
-                      className="mobile-link"
-                      onClick={() => setIsMobilePopupOpen(false)}
-                    >
-                     Time Statistics
-                    </Link>
                 <button
                   className="mobile-link"
                   onClick={() => {
