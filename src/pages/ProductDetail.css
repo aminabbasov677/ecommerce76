@@ -33,6 +33,15 @@
   100% { transform: rotate(360deg); }
 }
 
+@keyframes rotate360 {
+  0% {
+    transform: rotateY(0deg) translateZ(30px);
+  }
+  100% {
+    transform: rotateY(360deg) translateZ(30px);
+  }
+}
+
 /* Container */
 .product-detail-container {
   padding: 6rem 2rem;
@@ -104,11 +113,19 @@
   transition: all 0.4s ease;
   transform-style: preserve-3d;
   width: 100%;
+  perspective: 1000px; /* 3D effekt üçün perspektiv */
+  cursor: grab; /* Sürükləməni göstərmək üçün kursor */
 }
+
+.product-image-container:active {
+  cursor: grabbing; /* Sürükləmə zamanı kursor dəyişir */
+}
+
 .product-image-container:hover {
   transform: translateZ(20px) scale(1.02);
   box-shadow: 0 0 60px rgba(0, 255, 195, 0.7);
 }
+
 .product-image {
   max-width: 100%;
   max-height: 400px;
@@ -117,6 +134,11 @@
   border-radius: 1rem;
   filter: drop-shadow(0 0 20px rgba(0, 255, 195, 0.4));
   transform: translateZ(30px);
+  transition: transform 0.1s ease; /* Hamar fırlanma üçün */
+}
+
+.product-image-container:hover .product-image {
+  animation: rotate360 10s linear infinite; /* Hover zamanı avtomatik fırlanma */
 }
 
 /* Product Info */
@@ -194,7 +216,6 @@
 /* Add to Cart Button */
 .add-to-cart-btn {
   width: auto !important;
-
   height: 45px;
   padding: 12px 24px;
   font-size: 1rem;
@@ -222,12 +243,12 @@
   flex-shrink: 0;
 }
 
-.add-to-cart-button:hover {
+.add-to-cart-btn:hover {
   background: linear-gradient(45deg, #00d1ff, #00ffc3);
   transform: scale(1.05);
   box-shadow: 0 0 20px rgba(0, 255, 195, 0.7), 0 0 40px rgba(0, 255, 195, 0.3);
 }
-.add-to-cart-button::after {
+.add-to-cart-btn::after {
   content: "";
   position: absolute;
   top: 50%;
@@ -239,7 +260,7 @@
   transform: translate(-50%, -50%);
   transition: width 0.4s ease, height 0.4s ease;
 }
-.add-to-cart-button:hover::after {
+.add-to-cart-btn:hover::after {
   width: 200%;
   height: 200%;
 }
@@ -430,6 +451,7 @@
   align-items: center;
   gap: 0.5rem;
   margin-bottom: 0.5rem;
+  position: relative;
 }
 .user-icon {
   font-size: 1.2rem;
@@ -440,6 +462,29 @@
   font-weight: 700;
   color: #ffffff;
   text-shadow: 0 0 8px rgba(0, 255, 195, 0.5);
+}
+.delete-review-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  margin-left: auto;
+  color: #ff4d4d;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.delete-review-btn:hover {
+  color: #ff0000;
+  transform: scale(1.1);
+}
+.trash-icon {
+  font-size: 1.2rem;
+  filter: drop-shadow(0 0 5px rgba(255, 77, 77, 0.5));
+}
+.delete-review-btn:hover .trash-icon {
+  filter: drop-shadow(0 0 8px rgba(255, 0, 0, 0.7));
 }
 .review-rating {
   display: flex;
@@ -562,6 +607,10 @@
   .product-detail-container {
     padding-top: 8rem;
   }
+  .product-image-container {
+    height: 600px;
+    
+  }
 }
 @media (max-width: 860px) {
   .product-detail {
@@ -578,13 +627,13 @@
   .product-info .product-title {
     font-size: 1.5rem;
   }
-  .add-to-cart-button {
+  .add-to-cart-btn {
     width: 100%;
   }
 }
 @media (prefers-reduced-motion: reduce) {
   .product-image-container, .product-info, .review-card,
-  .add-to-cart-button, .submit-review-button, .social-button, .ai-assistant-button,
+  .add-to-cart-btn, .submit-review-button, .social-button, .ai-assistant-button,
   .quantity-btn {
     transition: none;
     animation: none;

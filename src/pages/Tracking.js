@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { useTracking } from '../context/TrackingContext';
+import { useTracking, STAGES } from '../context/TrackingContext';
 import { useCart } from '../context/CartContext';
 import { Chart as ChartJS, LineElement, PointElement, CategoryScale, LinearScale, Tooltip, Legend } from 'chart.js';
 import { Line } from 'react-chartjs-2';
@@ -11,48 +11,69 @@ import { FaTrash } from 'react-icons/fa';
 
 ChartJS.register(LineElement, PointElement, CategoryScale, LinearScale, Tooltip, Legend);
 
-const STAGES = [
-  { name: 'In Warehouse', duration: 0 },
-  { name: 'Shipped', duration: 10000 },
-  { name: 'Arrived in Country', duration: 20000 },
-  { name: 'At Post Office', duration: 25000 },
-  { name: 'Delivered', duration: 30000 },
-];
-
 function Tracking() {
   const { state: trackingState, dispatch: trackingDispatch } = useTracking();
   const { state: cartState } = useCart();
   const navigate = useNavigate();
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [currentTime, setCurrentTime] = useState(Date.now());
+  const [chartData, setChartData] = useState(null);
+  const prevProgressDataRef = useRef(null); // Store previous progress data to avoid unnecessary updates
 
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentTime(Date.now());
-    }, 1000);
+    }, 100); // Update time every 100ms
+
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    if (selectedOrder) {
+      const newChartData = getChartData(selectedOrder);
+      const newProgressData = newChartData?.datasets[0]?.data;
+
+      // Only update chartData if progressData has changed
+      if (
+        newProgressData &&
+        JSON.stringify(newProgressData) !== JSON.stringify(prevProgressDataRef.current)
+      ) {
+        setChartData(newChartData);
+        prevProgressDataRef.current = newProgressData;
+        console.log('Chart Data Updated:', newChartData); // Debugging
+      }
+    }
+  }, [currentTime, selectedOrder]);
 
   const getChartData = (order) => {
     if (!order) return null;
 
     const elapsed = currentTime - order.timestamp;
-    const currentStageIndex = STAGES.findIndex(stage => elapsed < stage.duration);
-    const stageIndex = currentStageIndex === -1 ? STAGES.length - 1 : currentStageIndex;
+    console.log('Elapsed time:', elapsed); // Debug elapsed time
 
     // Calculate progress for each stage
     const progressData = STAGES.map((stage, index) => {
-      if (index < stageIndex) {
-        return index + 1; // Completed stages
-      } else if (index === stageIndex) {
-        // Current stage progress
-        const stageStart = index === 0 ? 0 : STAGES[index - 1].duration;
-        const stageEnd = stage.duration;
-        const stageProgress = (elapsed - stageStart) / (stageEnd - stageStart);
-        return index + stageProgress;
+      const stageStart = index === 0 ? 0 : STAGES[index - 1].duration;
+      const stageEnd = stage.duration;
+      const stageDuration = stageEnd - stageStart;
+
+      // If we haven't reached this stage yet
+      if (elapsed < stageStart) {
+        return 0;
       }
-      return 0; // Future stages
+      
+      // If we're in this stage
+      if (elapsed >= stageStart && elapsed < stageEnd) {
+        const stageElapsed = elapsed - stageStart;
+        const progress = (stageElapsed / stageDuration) * 100;
+        return Math.min(100, Math.max(0, progress));
+      }
+      
+      // If we've completed this stage
+      return 100;
     });
+
+    console.log('Progress Data:', progressData); // Debug progress data
 
     return {
       labels: STAGES.map(stage => stage.name),
@@ -60,13 +81,22 @@ function Tracking() {
         label: 'Tracking Progress',
         data: progressData,
         borderColor: '#00ffc3',
-        backgroundColor: 'rgba(0, 255, 195, 0.3)',
+        backgroundColor: 'rgba(0, 255, 195, 0.2)',
         pointBackgroundColor: '#00d1ff',
         pointBorderColor: '#00ffc3',
         pointRadius: 8,
         pointHoverRadius: 12,
         tension: 0.4,
         fill: true,
+        segment: {
+          borderColor: ctx => {
+            const index = ctx.p0DataIndex;
+            const progress = ctx.p0.parsed.y;
+            if (progress === 100) return '#00ffc3';
+            if (progress === 0) return 'rgba(0, 255, 195, 0.3)';
+            return '#00ffc3';
+          }
+        }
       }]
     };
   };
@@ -74,27 +104,51 @@ function Tracking() {
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
-    animation: {
-      duration: 1500,
-      easing: 'easeInOutCubic',
-    },
+    animation: false, // Disable animation to prevent flickering
     scales: {
       y: {
-        display: false,
+        display: true,
         min: 0,
-        max: STAGES.length,
+        max: 100,
+        ticks: {
+          color: '#00d1ff',
+          font: {
+            family: "'Orbitron', sans-serif",
+            size: 12,
+            weight: 'bold'
+          },
+          callback: function(value) {
+            return value + '%';
+          },
+          stepSize: 20
+        },
+        grid: {
+          color: 'rgba(0, 255, 195, 0.1)',
+          borderDash: [5, 5],
+          drawBorder: false
+        },
+        border: {
+          color: 'rgba(0, 255, 195, 0.3)'
+        }
       },
       x: {
         grid: {
-          color: 'rgba(0, 255, 195, 0.2)',
-          borderDash: [5, 5]
+          color: 'rgba(0, 255, 195, 0.1)',
+          borderDash: [5, 5],
+          drawBorder: false
         },
         ticks: {
           color: '#00d1ff',
           font: {
             family: "'Orbitron', sans-serif",
-            size: 12
-          }
+            size: 12,
+            weight: 'bold'
+          },
+          maxRotation: 45,
+          minRotation: 45
+        },
+        border: {
+          color: 'rgba(0, 255, 195, 0.3)'
         }
       }
     },
@@ -103,17 +157,50 @@ function Tracking() {
         display: false
       },
       tooltip: {
-        backgroundColor: 'rgba(17, 17, 17, 0.9)',
+        backgroundColor: 'rgba(17, 17, 17, 0.95)',
         titleColor: '#00ffc3',
         bodyColor: '#00ffc3',
         borderColor: '#00ffc3',
-        borderWidth: 1,
+        borderWidth: 2,
+        padding: 12,
         titleFont: {
-          family: "'Orbitron', sans-serif"
+          family: "'Orbitron', sans-serif",
+          size: 14,
+          weight: 'bold'
         },
         bodyFont: {
-          family: "'Orbitron', sans-serif"
+          family: "'Orbitron', sans-serif",
+          size: 13
+        },
+        callbacks: {
+          label: function(context) {
+            const stage = STAGES[context.dataIndex];
+            const progress = Math.round(context.raw);
+            const stageStart = context.dataIndex === 0 ? 0 : STAGES[context.dataIndex - 1].duration;
+            const stageEnd = stage.duration;
+            const stageDuration = (stageEnd - stageStart) / 1000;
+            return [
+              `Stage: ${stage.name}`,
+              `Progress: ${progress}%`,
+              `Duration: ${stageDuration}s`
+            ];
+          }
         }
+      }
+    },
+    elements: {
+      line: {
+        borderWidth: 3,
+        tension: 0.4
+      },
+      point: {
+        radius: 6,
+        hoverRadius: 10,
+        borderWidth: 3,
+        backgroundColor: '#00d1ff',
+        borderColor: '#00ffc3',
+        hoverBackgroundColor: '#00ffc3',
+        hoverBorderColor: '#00d1ff'
       }
     }
   };
@@ -182,8 +269,8 @@ function Tracking() {
           ))}
         </div>
         <div className="tracking-chart">
-          {getChartData(selectedOrder) && (
-            <Line data={getChartData(selectedOrder)} options={chartOptions} />
+          {chartData && (
+            <Line data={chartData} options={chartOptions} />
           )}
         </div>
       </motion.div>
@@ -199,7 +286,7 @@ function Tracking() {
     >
       <h1 className="page-title">Order Tracking</h1>
       <div className="products-grid">
-        {trackingState.orders.map(order => (
+        {[...trackingState.orders].reverse().map(order => (
           <motion.div
             key={order.id}
             initial={{ x: -50, opacity: 0 }}

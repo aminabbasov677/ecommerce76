@@ -366,6 +366,7 @@
 /* Order Confirmed */
 .order-confirmed {
   text-align: center;
+  margin-top: 10rem;
   padding: 3rem;
   background: linear-gradient(135deg, #111 0%, #1a1a1a 100%);
   border-radius: 8px;

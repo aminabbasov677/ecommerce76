@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
+import { useTracking } from "../context/TrackingContext";
 import { useNavigate } from "react-router-dom";
 import AddProduct from "./AddProduct";
 import MyProducts from "./MyProducts";
@@ -10,6 +11,7 @@ import "./Profile.css";
 
 function Profile() {
   const { state } = useCart();
+  const { state: trackingState } = useTracking();
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("profile");
@@ -162,16 +164,18 @@ function Profile() {
             className="orders-section"
           >
             <h2>Order History</h2>
-            {state.items.length > 0 ? (
+            {trackingState.orders.length > 0 ? (
               <div className="orders-list">
-                {state.items.map((item) => (
-                  <div key={item.id} className="order-item">
-                    <img src={item.image} alt={item.title} />
+                {[...trackingState.orders].reverse().map((order) => (
+                  <div key={order.id} className="order-item">
+                    {order.products && order.products[0] && (
+                      <img src={order.products[0].image} alt={order.products[0].title} />
+                    )}
                     <div className="order-details">
-                      <h3>{item.title}</h3>
-                      <p>Quantity: {item.quantity}</p>
-                      <p>Price: ${item.price}</p>
-                      <p>Total: ${(item.price * item.quantity).toFixed(2)}</p>
+                      <h3>{order.products && order.products[0] ? order.products[0].title : 'Order #' + order.id}</h3>
+                      <p>Status: {order.status}</p>
+                      <p>Total: ${order.total ? order.total.toFixed(2) : '0.00'}</p>
+                      <p>Date: {new Date(order.timestamp).toLocaleDateString()}</p>
                     </div>
                   </div>
                 ))}

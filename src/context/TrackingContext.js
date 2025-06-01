@@ -1,13 +1,13 @@
-import React, { createContext, useContext, useReducer, useEffect } from 'react';
+import React, { createContext, useContext, useReducer, useEffect, useRef } from 'react';
 
 const TrackingContext = createContext();
 
-const STAGES = [
+export const STAGES = [
   { name: 'In Warehouse', duration: 0 },
-  { name: 'Shipped', duration: 10000 }, // 10 seconds
-  { name: 'Arrived in Country', duration: 20000 }, // 20 seconds
-  { name: 'At Post Office', duration: 25000 }, // 25 seconds
-  { name: 'Delivered', duration: 30000 }, // 30 seconds
+  { name: 'Shipped', duration: 5000 }, // 5 seconds
+  { name: 'Arrived in Country', duration: 10000 }, // 10 seconds
+  { name: 'At Post Office', duration: 15000 }, // 15 seconds
+  { name: 'Delivered', duration: 20000 }, // 20 seconds
 ];
 
 const trackingReducer = (state, action) => {
@@ -82,6 +82,11 @@ const trackingReducer = (state, action) => {
 
 export const TrackingProvider = ({ children }) => {
   const [state, dispatch] = useReducer(trackingReducer, { orders: [] });
+  const ordersRef = useRef(state.orders);
+
+  useEffect(() => {
+    ordersRef.current = state.orders;
+  }, [state.orders]);
 
   useEffect(() => {
     // Load orders from localStorage on initial render
@@ -90,7 +95,7 @@ export const TrackingProvider = ({ children }) => {
 
     // Set up background status update
     const interval = setInterval(() => {
-      state.orders.forEach(order => {
+      ordersRef.current.forEach(order => {
         const elapsed = Date.now() - order.timestamp;
         const currentStage = STAGES.find(stage => elapsed < stage.duration) || STAGES[STAGES.length - 1];
         
@@ -99,10 +104,10 @@ export const TrackingProvider = ({ children }) => {
           dispatch({ type: "UPDATE_ORDER_STATUS", payload: { id: order.id } });
         }
       });
-    }, 1000); // Check every second
+    }, 100); // Check every 100ms for smoother updates
 
     return () => clearInterval(interval);
-  }, [state.orders]);
+  }, []); // Empty dependency array since we're using ref
 
   return (
     <TrackingContext.Provider value={{ state, dispatch }}>

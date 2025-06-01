@@ -436,9 +436,13 @@ const CardForm = ({ card, onSave, onClose }) => {
                 id="cvv"
                 name="cvv"
                 value={formData.cvv}
-                onChange={handleChange}
+                onChange={e => {
+                  // Only allow numbers and max 3 digits
+                  const numericValue = e.target.value.replace(/\D/g, '').slice(0, 3);
+                  setFormData(prev => ({ ...prev, cvv: numericValue }));
+                }}
                 placeholder="123"
-                maxLength={4}
+                maxLength={3}
                 required
               />
             </div>

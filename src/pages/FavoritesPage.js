@@ -46,7 +46,7 @@ function FavoritesPage() {
             <p className="neon-effect">No favorite products yet.</p>
           </div>
         ) : (
-          favorites.map((product) => (
+          [...favorites].reverse().map((product) => (
             <div key={product.id} className="product-card">
               <div className="product-image">
                 <Link to={`/product/${product.id}`}>

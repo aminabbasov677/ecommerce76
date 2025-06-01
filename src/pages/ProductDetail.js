@@ -4,8 +4,9 @@ import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { useCart } from "../context/CartContext";
 import { useFavorites } from "../context/FavoritesContext";
+import { useAuth } from "../context/AuthContext";
 import toast from "react-hot-toast";
-import { FaStar, FaRegStar, FaFacebook, FaTwitter, FaWhatsapp, FaUser, FaHeart, FaBrain, FaShoppingCart } from "react-icons/fa";
+import { FaStar, FaRegStar, FaFacebook, FaTwitter, FaWhatsapp, FaUser, FaHeart, FaBrain, FaShoppingCart, FaTrash } from "react-icons/fa";
 import { FaStarHalfAlt } from "react-icons/fa";
 import "./ProductDetail.css";
 import "./Home.css";
@@ -14,6 +15,7 @@ function ProductDetail() {
   const { id } = useParams();
   const { dispatch } = useCart();
   const { favorites, toggleFavorite } = useFavorites();
+  const { user } = useAuth();
   const navigate = useNavigate();
 
   const [userReview, setUserReview] = useState("");
@@ -68,7 +70,8 @@ function ProductDetail() {
 
     const newReview = {
       id: Date.now(),
-      username: "Anonymous",
+      username: user?.name || "Anonymous",
+      userEmail: user?.email,
       comment: userReview,
       rating: userRating,
     };
@@ -79,6 +82,13 @@ function ProductDetail() {
     setUserReview("");
     setUserRating(0);
     toast.success("Review submitted!");
+  };
+
+  const handleDeleteReview = (reviewId) => {
+    const updatedReviews = reviews.filter(review => review.id !== reviewId);
+    setReviews(updatedReviews);
+    localStorage.setItem(`product_reviews_${id}`, JSON.stringify(updatedReviews));
+    toast.success("Review deleted successfully!");
   };
 
   const handleRatingSubmit = () => {
@@ -293,6 +303,17 @@ function ProductDetail() {
               <div className="review-header">
                 <FaUser className="user-icon" />
                 <span className="username">{review.username}</span>
+                {user && review.userEmail === user.email && (
+                  <motion.button
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => handleDeleteReview(review.id)}
+                    className="delete-review-btn"
+                    aria-label="Delete review"
+                  >
+                    <FaTrash className="trash-icon" />
+                  </motion.button>
+                )}
               </div>
               <div className="review-rating">{renderStars(review.rating)}</div>
               <p className="review-comment">{review.comment}</p>
